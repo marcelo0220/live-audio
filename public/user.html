@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Utilisateur - Micro</title>
+<style>
+  body { font-family: Arial; text-align:center; background:#e0f7fa; margin-top:50px; }
+  h2 { color:#00796b; }
+  button { padding:12px 24px; margin:10px; font-size:18px; border-radius:8px; cursor:pointer; border:none; background:#00796b; color:white; box-shadow:0 4px 6px rgba(0,0,0,0.1); }
+  button:hover { background:#004d40; }
+</style>
+</head>
+<body>
+<h2>🎤 Utilisateur - Micro</h2>
+<button onclick="start()">Activer micro</button>
+<button onclick="stop()">Stop</button>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+let audioContext, stream, source;
+const socket = io();
+
+async function start() {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    audioContext = new AudioContext();
+    source = audioContext.createMediaStreamSource(stream);
+    source.connect(audioContext.destination);
+    alert("Micro activé !");
+    
+    // Envoi vers WebRTC admin
+    pc = new RTCPeerConnection();
+    stream.getTracks().forEach(track => pc.addTrack(track, stream));
+    pc.onicecandidate = (event) => {
+      if(event.candidate) socket.emit("signal", { candidate:event.candidate });
+    };
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    socket.emit("signal", { offer });
+  } catch(err) {
+    alert("Erreur ou permission refusée");
+    console.error(err);
+  }
+}
+
+function stop() {
+  if(stream) stream.getTracks().forEach(track => track.stop());
+  if(audioContext) audioContext.close();
+  alert("Micro arrêté");
+}
+
+let pc;
+socket.on("signal", async (data) => {
+  if(data.answer) await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
+  if(data.candidate) await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+});
+</script>
+</body>
+</html>

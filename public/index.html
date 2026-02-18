@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Live Audio</title>
+<style>
+  body { font-family: Arial; text-align:center; background:#f0f4f8; margin-top:50px; }
+  h2 { color:#333; }
+  button { padding:12px 24px; margin:10px; font-size:18px; border-radius:8px; cursor:pointer; border:none; background:#0288d1; color:white; box-shadow:0 4px 6px rgba(0,0,0,0.1); }
+  button:hover { background:#01579b; }
+  input { padding:10px; font-size:16px; border-radius:6px; border:1px solid #ccc; }
+  .container { display:flex; flex-direction:column; align-items:center; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>🎤 Live Audio</h2>
+  <a href="user.html"><button>Utilisateur (micro)</button></a>
+  <br>
+  <input type="password" id="adminPass" placeholder="Mot de passe admin"/>
+  <button onclick="checkAdmin()">Admin</button>
+</div>
+
+<script>
+function checkAdmin() {
+  const pass = document.getElementById("adminPass").value;
+  if(pass === "Celo1234") {  // change par ton mot de passe
+    window.location.href = "admin.html";
+  } else {
+    alert("Mot de passe incorrect !");
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Admin - Écoute</title>
+<style>
+  body { font-family: Arial; text-align:center; background:#fff3e0; margin-top:50px; }
+  h2 { color:#e65100; }
+  audio { margin-top:20px; border:2px solid #ff9800; border-radius:8px; padding:10px; }
+</style>
+</head>
+<body>
+<h2>🧑‍💻 Admin - Écoute</h2>
+<audio id="audio" autoplay></audio>
+<p>Vous êtes connecté en tant qu'admin</p>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket = io();
+let pc = new RTCPeerConnection();
+
+pc.ontrack = (event) => {
+  document.getElementById("audio").srcObject = event.streams[0];
+};
+
+pc.onicecandidate = (event) => {
+  if(event.candidate) socket.emit("signal", { candidate:event.candidate });
+};
+
+socket.on("signal", async (data) => {
+  if(data.offer) {
+    await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
+    const answer = await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+    socket.emit("signal", { answer });
+  }
+  if(data.candidate) await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+});
+</script>
+</body>
+</html>
